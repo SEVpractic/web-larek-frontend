@@ -35,6 +35,14 @@ export interface IApi {
 	post(uri: string, data: object, method: ApiPostMethods): Promise<object>;
 }
 
+export interface IProductModel {
+  GetProductItem(id: string): ProductItemRespose;
+}
+
+export interface IOrderModel {
+  PostOrder(orderBody: OrderRequestBody): OrderRespose;
+}
+
 export type EventName = string | RegExp;
 export type Subscriber = Function;
 export type EmitterEvent = {
