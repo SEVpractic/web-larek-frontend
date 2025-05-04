@@ -34,6 +34,7 @@ type OrderModel = {};
 export type Main = {
 	catalogItems: Map<string, CardModel>;
 	order: OrderModel;
+	preview: CardModel;
 }
 
 export interface IApi {
