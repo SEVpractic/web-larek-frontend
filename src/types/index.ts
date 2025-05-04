@@ -5,7 +5,7 @@ export type ApiListResponse<Type> = {
 	items: Type[];
 };
 
-export type ProductItemRespose = {
+export type ProductItem = {
 	id: string;
 	description: string;
 	image: string;
@@ -14,7 +14,7 @@ export type ProductItemRespose = {
 	price: number | null;
 };
 
-export type OrderRequestBody = {
+export type Order = {
 	payment: string;
 	email: string;
 	phone: string;
@@ -28,6 +28,14 @@ export type OrderRespose = {
 	total: number;
 };
 
+type CardModel = {};
+type OrderModel = {};
+
+export type Main = {
+	catalogItems: Map<string, CardModel>;
+	order: OrderModel;
+}
+
 export interface IApi {
 	readonly baseUrl: string;
 
@@ -35,12 +43,10 @@ export interface IApi {
 	post(uri: string, data: object, method: ApiPostMethods): Promise<object>;
 }
 
-export interface IProductModel {
-  GetProductItem(id: string): ProductItemRespose;
-}
-
-export interface IOrderModel {
-  PostOrder(orderBody: OrderRequestBody): OrderRespose;
+export interface IProductApi {
+  GetProductItem(id: string): ProductItem;
+	GetProductList(id: string): ProductItem[];
+	PostOrder(orderBody: Order): OrderRespose;
 }
 
 export type EventName = string | RegExp;
@@ -62,3 +68,48 @@ export interface IEvents {
 export type Action = {
   onClick: (e: MouseEvent) => void;
 };
+
+export type Page = {
+	headerBasket: HTMLElement;
+	basketCounter: HTMLElement;
+	gallery: HTMLElement;
+	pageWrapper: HTMLElement;
+}
+
+export type Card = {
+	cardImage?: HTMLImageElement;
+	cardText?: HTMLElement;
+	cardCategory?: HTMLElement;
+	cardTitle: HTMLElement;
+	cardPrice: HTMLElement;
+	cardButton?: HTMLButtonElement;
+	basketItemIndex?: HTMLElement; 
+}
+
+export type Modal = {
+	modalСlose: HTMLButtonElement;
+	modalContent: HTMLElement; 
+}
+
+export type Basket = {
+	basketList: HTMLElement;
+	basketPrice: HTMLElement;
+	basketButton: HTMLButtonElement; 
+}
+
+export type Form = {
+	submit: HTMLButtonElement;
+	formErrors: HTMLElement;
+}
+
+export type PaymentForm = {
+	cardBtn: HTMLButtonElement;
+	cashBtn: HTMLButtonElement;
+}
+
+export type ContactsFormView = {}
+
+export type SuccessView = {
+	orderSuccessDescription: HTMLButtonElement;
+	orderSuccessClose: HTMLButtonElement;
+}
