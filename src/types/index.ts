@@ -103,11 +103,16 @@ export type Form = {
 }
 
 export type PaymentForm = {
+	payment: string;
+  address: string;
 	cardBtn: HTMLButtonElement;
 	cashBtn: HTMLButtonElement;
 }
 
-export type ContactsFormView = {}
+export type ContactsFormView = {
+	email: string;
+	phone: string;
+}
 
 export type SuccessView = {
 	orderSuccessDescription: HTMLButtonElement;

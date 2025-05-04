@@ -335,6 +335,8 @@ ___
 **Тип `PaymentForm`:**
 ```ts
 export type PaymentForm = {
+  payment: string;// значение типа платежа
+  address: string;// значение адреса доставки
   cardBtn: HTMLButtonElement;//кнопка оплаты онлайн
   cashBtn: HTMLButtonElement;//кнопка оплаты при получении
 }
@@ -345,10 +347,10 @@ export type PaymentForm = {
 - `events: IEvents` — интерфейс брокера событий.
 
 **Методы:**
-- `setAddress(val: string)` — установить адрес доставки.
+- `set address(val: string)` — установить адрес доставки.
 - `get cardBtn(): HTMLButtonElement` — возвращает кнопку оплаты онлайн.
 - `get cashBtn(): HTMLButtonElement` — возвращает кнопку оплаты при получении.
-- setPaymentType(type: 'card' | 'cash' | null ) — установить выбранный тип оплаты.
+- set payment(type: 'card' | 'cash' | null ) — установить выбранный тип оплаты.
 ___
 #### `ContactsFormView`
 
@@ -357,7 +359,10 @@ ___
 
 **Тип `ContactsFormView`:**
 ```ts
-export type ContactsFormView = {}
+export type ContactsFormView = {
+  email: string; // значние email пользователя
+  phone: string; // значние phone пользователя
+}
 ```
 
 **Конструктор:**
@@ -365,8 +370,8 @@ export type ContactsFormView = {}
 - `events: IEvents` — интерфейс брокера событий.
 
 **Методы:**
-- `setEmail(val: string)` — установить email.
-- `setPhone(val: string)` — установить телефон.
+- `set email(val: string)` — установить email.
+- `set phone(val: string)` — установить телефон.
 ___
 #### `SuccessView`
 
