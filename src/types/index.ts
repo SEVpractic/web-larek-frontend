@@ -28,13 +28,10 @@ export type OrderRespose = {
 	total: number;
 };
 
-type CardModel = {};
-type OrderModel = {};
-
 export type Main = {
-	catalogItems: Map<string, CardModel>;
-	order: OrderModel;
-	preview: CardModel;
+	catalogItems: Map<string, ProductItem>;
+	order: string | null;
+	preview: Order;
 }
 
 export interface IApi {

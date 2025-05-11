@@ -46,10 +46,10 @@
 
 **Особенности:**
 - Используется только через наследников.
-- Интерфейс `IApi` предоставляет методы:
+**Методы:**
   - `get(uri: string): Promise<object>` — отправка GET-запроса.
   - `post(uri: string, data: object, method: ApiPostMethods): Promise<object>` — отправка POST-запроса с указанием метода (POST, PUT и т.д.).
-- Приватные методы класса:
+**Приватные методы:**
   - `protected handleResponse(response: Response): Promise<object>` - обрабатывает полученный с сервера ответ типа Response.
 
 ---
@@ -107,10 +107,19 @@
 **Путь:** `src/components/model/`
 
 ---
-#### `CardModel`
+#### `MainModel`
+Класс, описывающий модель главной страницы. Хранит список карточек, id выбранной для просмотра карточки, информацию о заказе. Отвечает за логику взаимодействия с этими данными. Наследует `Model`, типизируется типом `Main`. Использует родительский конструктор.
 
-Класс, описывающий модель карточки товара. Наследует абстрактный обобщённый класс `Model`, указывая в качестве типа данных структуру товара `ProductItem`.
+**Тип `Main`:**
+```ts
+export type Main = {
+  catalogItems: Map<string, ProductItem>;  // карточки в каталоге
+  preview: string | null;                  // id карточки в превью
+  order: Order;                            // модель заказа
+};
+```
 
+Тип, описывающий данные карточки товара.
 **Тип `ProductItem`:**
 ```ts
 export type ProductItem = {
@@ -121,14 +130,9 @@ export type ProductItem = {
   category: string;       // категория товара
   price: number | null;   // цена товара
 };
-
 ```
 
----
-#### `OrderModel`
-
-Класс, описывающий модель заказа. Наследует абстрактный обобщённый класс `Model`, указывая в качестве типа данных структуру заказа `Order`.
-
+Тип, описывающий данные заказа.
 **Тип `Order`:**
 ```ts
 export type Order = {
@@ -142,38 +146,23 @@ export type Order = {
 ```
 
 **Методы:**
-- `addItemToOrder(id: string): void` — добавляет товар в заказ, если его там ещё нет.    
-- `removeItemFromOrder(id: string): void` — удаляет товар из заказа по id.    
-- `getItems(): string[]` — возвращает массив id добавленных товаров.    
-- `incrementTotal(price: number | null): void` — увеличивает общую стоимость, если цена задана.    
-- `getTotal(): number` — возвращает текущую общую стоимость.    
+- `setCatalogItems(items: ProductItem[]): void` — заполняет каталог товарами. 
+- `getCard(id: string): ProductItem` — возвращает карточку по id.    
+- `getCards(id: string[]): ProductItem[]` — возвращает карточки по массиву id.    
+- `getCards(): ProductItem[]` — возвращает все карточки из каталога.
+- `hasCardById(id: string): boolean` — проверяет наличие карточки по переданному id.
+- `set preview(id: string | null)` — устанавливает выбранную карточку.
+- `addItemToOrder(id: string): void` — добавляет товар в заказ (корзину), если его там ещё нет.    
+- `removeItemFromOrder(id: string): void` — удаляет товар из заказа по id. 
+- `clearOrdersBasket(): void` — очищает массив добавленных в заказ позиций (корзину). Очищает стоимость. 
+- `clearOrdersInfo(): void` — очищает веденные данные пользователя.
+- `set total(): void` — задает общую стоимость исходя из массива товаров в корзине.
+- `get total(): number` — возвращает текущую общую стоимость.
+- `getItems(): string[]` — возвращает массив id добавленных товаров.
 - `validatePayment(payment: string, address: string): boolean` — проверяет корректность данных формы оплаты.    
 - `setPayment(payment: string, address: string): void` — сохраняет данные формы оплаты.    
 - `validateContacts(email: string, phone: string): boolean` — проверяет корректность контактной информации.    
 - `setContacts(email: string, phone: string): void` — сохраняет контактные данные покупателя.    
-
----
-#### `MainModel`
-
-Класс, описывающий модель главной страницы. Хранит список карточек, выбранную для просмотра карточку, заказ. Наследует `Model`, типизируется типом `Main`.
-
-**Тип `Main`:**
-```ts
-export type Main = {
-  catalogItems: Map<string, CardModel>;  // карточки в каталоге
-  preview: CardModel;                    // карточка в превью
-  order: OrderModel;                     // модель заказа
-};
-```
-
-**Методы:**
-- `fillCatalog(): void` — заполняет каталог товарами.    
-- `getCard(id: string): CardModel` — возвращает карточку по id.    
-- `getCards(id: string[]): CardModel[]` — возвращает карточки по массиву id.    
-- `getCards(): CardModel[]` — возвращает все карточки из каталога.    
-- `getOrder(): OrderModel` — возвращает текущую модель заказа.    
-- `clearOrder(): void` — очищает заказ.    
-- `set preview(card: CardModel)` — устанавливает выбранную карточку.  
 
 ---
 #### `ProductApi`
@@ -417,9 +406,9 @@ ___
 | `contacts_form:submit`       | `ContactsFormView`           | Клик по кнопке оплатить в форме ввода email и телефона                                       |
 | `catalog:changed`            | `MainModel`                  | Обновлен каталог товаров                                                                     |
 | `preview:changed`            | `MainModel`                  | Выбран новый объект - карточка превью                                                        |
-| `basket:changed`             | `OrderModel`                 | Изменилось содержимое корзины                                                                |
-| `order:changed`              | `OrderModel`                 | Изменились данные о адресе доставки, email или телефоне                                      |
-| `form_input_errors:changed`  | `OrderModel`                 | Изменились ошибки валидации                                                                  |
+| `basket:changed`             | `MainModel`                  | Изменилось содержимое корзины                                                                |
+| `order:changed`              | `MainModel`                  | Изменились данные о адресе доставки, email или телефоне                                      |
+| `form_input_errors:changed`  | `MainModel`                  | Изменились ошибки валидации                                                                  |
 
 
 ## Установка и запуск
