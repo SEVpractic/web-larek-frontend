@@ -42,9 +42,9 @@ export interface IApi {
 }
 
 export interface IProductApi {
-  GetProductItem(id: string): ProductItem;
-	GetProductList(id: string): ProductItem[];
-	PostOrder(orderBody: Order): OrderRespose;
+  getProductItem(id: string): Promise<ProductItem>;
+	getProductList(): Promise<ProductItem[]>;
+	postOrder(orderBody: Order): Promise<OrderRespose>;
 }
 
 export type EventName = string | RegExp;
@@ -116,3 +116,5 @@ export type SuccessView = {
 	orderSuccessDescription: HTMLButtonElement;
 	orderSuccessClose: HTMLButtonElement;
 }
+
+export type FormError = Partial<Record<keyof Order, string>>;
