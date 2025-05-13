@@ -91,6 +91,10 @@ module.exports = () => {
     config.mode = "production";
   } else {
     config.mode = "development";
+    config.devtool = 'source-map';
+    config.optimization = {
+      minimize: false,
+    };
   }
   return config;
 };

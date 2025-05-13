@@ -2,16 +2,16 @@ import { IEvents, Main, ProductItem, Order, FormError } from "../../types";
 import { Model } from "../base/Model";
 
 export class MainModel extends Model<Main> {
-  catalogItems: Map<string, ProductItem>;
-  preview: string | null;
-  order: Order;
+  private _catalogItems: Map<string, ProductItem>;
+  private _preview: string | null;
+  private _order: Order;
 
   constructor(data: Partial<Main>, protected events: IEvents) {
     super(data, events);
     
-    this.catalogItems = new Map();
-    this.preview = null;
-    this.order = {
+    this._catalogItems = new Map();
+    this._preview = null;
+    this._order = {
       payment: '',
       email: '',
       phone: '',
@@ -21,90 +21,90 @@ export class MainModel extends Model<Main> {
     };
   }
 
-  setCatalogItems(items: ProductItem[]): void {
-    this.catalogItems = new Map(items.map(el => [el.id, el]));
+  set catalogItems(items: ProductItem[]) {
+    this._catalogItems = new Map(items.map(el => [el.id, el]));
 
-    this.emitChanges('catalog:changed', { catalogItems: this.catalogItems});
+    this.emitChanges('catalog:changed', { catalogItems: this._catalogItems});
   }
 
   getCard(id: string): ProductItem {
-    return this.catalogItems.get(id);
+    return this._catalogItems.get(id);
   }
 
   getCards(ids: string[]): ProductItem[] {
-    return ids.map(id => this.catalogItems.get(id))
+    return ids.map(id => this._catalogItems.get(id))
     .filter((item): item is ProductItem => item !== undefined);
   }
 
   getAllCards(): ProductItem[] {
-    return Array.from(this.catalogItems.values());
+    return Array.from(this._catalogItems.values());
   }
   
   hasCardById(id: string): boolean {
-    return this.catalogItems.has(id);
+    return this._catalogItems.has(id);
   }
 
-  setPreview(id: string | null) {
+  set preview(id: string | null) {
     if (!this.hasCardById(id)) return;
-    this.preview = id;
+    this._preview = id;
 
-    this.emitChanges('preview:changed', { item: this.getCard(this.preview) });
+    this.emitChanges('preview:changed', { item: this.getCard(this._preview) });
   }
 
   addItemToOrder(id: string): void {
-    if (this.hasCardById(id) && !this.order.items.includes(id)) {
-      this.order.items.push(id);
+    if (this.hasCardById(id) && !this._order.items.includes(id)) {
+      this._order.items.push(id);
       this.setTotal();
 
-      this.emitChanges('basket:changed', { items: this.getCards(this.order.items) });
+      this.emitChanges('basket:changed', { items: this.getCards(this._order.items) });
     }
   } 
 
   removeItemFromOrder(id: string): void {
-    if (this.hasCardById(id) && this.order.items.includes(id)) {
-      this.order.items = this.order.items.filter(el => el !== id);
+    if (this.hasCardById(id) && this._order.items.includes(id)) {
+      this._order.items = this._order.items.filter(el => el !== id);
       this.setTotal();
 
-      this.emitChanges('basket:changed', { items: this.getCards(this.order.items) });
+      this.emitChanges('basket:changed', { items: this.getCards(this._order.items) });
     }
   }
 
   clearOrdersBasket(): void {
-    this.order.items = [];
+    this._order.items = [];
     this.setTotal();
 
-    this.emitChanges('basket:changed', { items: this.getCards(this.order.items) });
+    this.emitChanges('basket:changed', { items: this.getCards(this._order.items) });
   }
 
   clearOrdersInfo(): void {
-    this.order.address = "";
-    this.order.email = "";
-    this.order.payment = "";
-    this.order.phone = "";
+    this._order.address = "";
+    this._order.email = "";
+    this._order.payment = "";
+    this._order.phone = "";
 
-    this.emitChanges('order:changed', { order: this.order });
+    this.emitChanges('order:changed', { order: this._order });
   }
 
   setTotal(): void {
-    this.order.total = this.getCards(this.order.items)
+    this._order.total = this.getCards(this._order.items)
       .reduce((total, item) => total + item.price, 0);
   }
 
   getTotal(): number {
-    return this.order.total;
+    return this._order.total;
   }
 
-  getItems(): string[] {
-    return this.order.items;
+  get items(): string[] {
+    return this._order.items;
   }
 
   validatePayment(): boolean {
     const errors: FormError = {};
 
-    if (!this.order.payment) {
+    if (!this._order.payment) {
       errors.payment = "Не выбран способ оплаты";
     }
-    if (!this.order.address) {
+    if (!this._order.address) {
       errors.address = "Не введен адрес доставки";
     }
 
@@ -114,21 +114,21 @@ export class MainModel extends Model<Main> {
   }
 
   setPayment(payment: string, address: string): void {
-    this.order.payment = payment;
-    this.order.address = address;
+    this._order.payment = payment;
+    this._order.address = address;
 
     if (this.validatePayment()) {
-      this.emitChanges('order:changed', { order: this.order});
+      this.emitChanges('order:changed', { order: this._order});
     }
   }
 
   validateContacts(): boolean {
     const errors: FormError = {};
 
-    if (!this.order.email) {
+    if (!this._order.email) {
       errors.email = "Не указан email";
     }
-    if (!this.order.phone) {
+    if (!this._order.phone) {
       errors.phone = "Не указан номер телефона";
     }
 
@@ -138,11 +138,11 @@ export class MainModel extends Model<Main> {
   } 
 
   setContacts(email: string, phone: string): void {
-    this.order.email = email;
-    this.order.phone = phone;
+    this._order.email = email;
+    this._order.phone = phone;
 
     if (this.validateContacts) {
-      this.emitChanges('order:changed', { order: this.order});
+      this.emitChanges('order:changed', { order: this._order});
     }
   }
 }
