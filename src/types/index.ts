@@ -74,15 +74,7 @@ export type Page = {
 	pageWrapper: HTMLElement;
 }
 
-export type Card = {
-	cardImage?: HTMLImageElement;
-	cardText?: HTMLElement;
-	cardCategory?: HTMLElement;
-	cardTitle: HTMLElement;
-	cardPrice: HTMLElement;
-	cardButton?: HTMLButtonElement;
-	basketItemIndex?: HTMLElement; 
-}
+export type Card = ProductItem & { buttonText: string }
 
 export type Modal = {
 	modalСlose: HTMLButtonElement;
@@ -120,9 +112,15 @@ export type SuccessView = {
 export type FormError = Partial<Record<keyof Order, string>>;
 
 export const categories = new Map<string, string> ([
-    ['софт-скил', 'card__category_soft'],
-    ['хард-скил', 'card__category_hard'],
-    ['другое', 'card__category_other'],
-    ['дополнительное', 'card__category_additional'],
-    ['кнопка', 'card__category_button'],
+  ['софт-скил', 'card__category_soft'],
+  ['хард-скил', 'card__category_hard'],
+  ['другое', 'card__category_other'],
+  ['дополнительное', 'card__category_additional'],
+  ['кнопка', 'card__category_button'],
+]);
+
+export const cardButtonTexts = new Map<string, string> ([
+	['add', 'Купить'],
+	['remove', 'Убрать'],
+  ['disabled', 'Не продается!']
 ]);

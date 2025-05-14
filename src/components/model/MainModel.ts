@@ -48,32 +48,39 @@ export class MainModel extends Model<Main> {
     if (!this.hasCardById(id)) return;
     this._preview = id;
 
-    this.emitChanges('preview:changed', { item: this.getCard(this._preview) });
+    this.emitChanges('preview:changed', this.getCard(this._preview));
   }
 
-  addItemToOrder(id: string): void {
-    if (this.hasCardById(id) && !this._order.items.includes(id)) {
+  getCartActionStatus(id: string): 'add' | 'remove' | 'disabled' {
+    const item = this.getCard(id);
+    if (!item || !item.price) return 'disabled';
+
+    if (this._order.items.includes(id)) {
+      return 'remove';
+    } 
+    return 'add'
+  }
+
+  toggleProductInOrder(id: string): void {
+    if (!this.hasCardById(id)) return;
+
+    if (!this._order.items.includes(id)) {
       this._order.items.push(id);
-      this.setTotal();
-
-      this.emitChanges('basket:changed', { items: this.getCards(this._order.items) });
-    }
-  } 
-
-  removeItemFromOrder(id: string): void {
-    if (this.hasCardById(id) && this._order.items.includes(id)) {
+    } else {
       this._order.items = this._order.items.filter(el => el !== id);
-      this.setTotal();
-
-      this.emitChanges('basket:changed', { items: this.getCards(this._order.items) });
     }
+
+    this.setTotal();
+    this.emitChanges('basket:changed', this.getCards(this._order.items));
+
+    console.log('order: ', this._order)
   }
 
   clearOrdersBasket(): void {
     this._order.items = [];
     this.setTotal();
 
-    this.emitChanges('basket:changed', { items: this.getCards(this._order.items) });
+    this.emitChanges('basket:changed', this.getCards(this._order.items));
   }
 
   clearOrdersInfo(): void {
@@ -82,7 +89,7 @@ export class MainModel extends Model<Main> {
     this._order.payment = "";
     this._order.phone = "";
 
-    this.emitChanges('order:changed', { order: this._order });
+    this.emitChanges('order:changed', this._order );
   }
 
   setTotal(): void {
@@ -118,7 +125,7 @@ export class MainModel extends Model<Main> {
     this._order.address = address;
 
     if (this.validatePayment()) {
-      this.emitChanges('order:changed', { order: this._order});
+      this.emitChanges('order:changed', this._order);
     }
   }
 
@@ -142,7 +149,7 @@ export class MainModel extends Model<Main> {
     this._order.phone = phone;
 
     if (this.validateContacts) {
-      this.emitChanges('order:changed', { order: this._order});
+      this.emitChanges('order:changed', this._order);
     }
   }
 }

@@ -1,4 +1,4 @@
-import { IEvents, Page, ProductItem } from "../../types";
+import { IEvents, ProductItem } from "../../types";
 import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 
