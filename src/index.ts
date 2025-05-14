@@ -2,6 +2,7 @@ import { EventEmitter } from './components/base/events';
 import { Modal } from './components/common/Modal';
 import { MainModel } from './components/model/MainModel';
 import { ProductApi } from './components/model/ProductApi';
+import { BasketView } from './components/view/BasketView';
 import { CardView } from './components/view/CardView';
 import { PageView } from './components/view/PageView';
 import './scss/styles.scss';
@@ -12,21 +13,24 @@ import { cloneTemplate, ensureElement } from './utils/utils';
 
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
+const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
 const modalContainer = ensureElement<HTMLElement>('#modal-container');
+const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 
 const eventEmitter = new EventEmitter();
 const productApi = new ProductApi(API_URL);
 const mainModel = new MainModel({}, eventEmitter);
 const pageView = new PageView(document.body, eventEmitter);
 const modal = new Modal(modalContainer, eventEmitter);
+const basketView = new BasketView(cloneTemplate(basketTemplate), eventEmitter);
 
 //отладочные сообщения
 eventEmitter.onAll(({ eventName, data }) => {
   console.log(eventName, data);
 })
 
-eventEmitter.on<ProductItem[]>('catalog:changed', () => {
-  const cards = mainModel.getAllCards().map(item => {
+eventEmitter.on<ProductItem[]>('catalog:changed', items => {
+  const cards = items.map(item => {
     const card = new CardView(
       cloneTemplate(cardCatalogTemplate),
       {
@@ -66,12 +70,27 @@ eventEmitter.on<Card>('preview:changed', item => {
 
 eventEmitter.on<ProductItem>('card:click', item => mainModel.toggleProductInOrder(item.id));
 
-eventEmitter.on('modal:open', () => {
-    pageView.lock = true;
-});
+eventEmitter.on('modal:open', () => pageView.lock = true);
 
-eventEmitter.on('modal:close', () => {
-    pageView.lock = false;
+eventEmitter.on('modal:close', () => pageView.lock = false);
+
+eventEmitter.on<ProductItem[]>('basket:changed', items => {
+  pageView.counter = mainModel.items.length;
+  basketView.basketList = items.map((item, index) => {
+    const card = new CardView(
+      cloneTemplate(cardBasketTemplate),
+      {
+        onClick: () => eventEmitter.emit('card:click', item)
+      }
+    );
+    return card.render({ ...item, basketItemIndex: index++});
+  });  
+})
+
+eventEmitter.on('basket:click', () => {
+    modal.render({
+        content: basketView.render(),
+    });
 });
 
 productApi.getProductList()

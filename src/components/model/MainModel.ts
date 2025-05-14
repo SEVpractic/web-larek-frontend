@@ -24,7 +24,7 @@ export class MainModel extends Model<Main> {
   set catalogItems(items: ProductItem[]) {
     this._catalogItems = new Map(items.map(el => [el.id, el]));
 
-    this.emitChanges('catalog:changed', { catalogItems: this._catalogItems});
+    this.emitChanges('catalog:changed', this.getAllCards());
   }
 
   getCard(id: string): ProductItem {

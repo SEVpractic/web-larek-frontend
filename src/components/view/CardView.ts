@@ -39,14 +39,17 @@ export class CardView extends Component<Card> {
   }
 
   set image(val: string) {
+    if (!this._cardImage) return;
     this.setImage(this._cardImage, val, this.title);
   }
   
   set description(val: string){
+    if (!this._cardText) return;
     this.setText(this._cardText, val);
   }
 
   set category(val: string) {
+    if (!this._cardCategory) return;
     this.setText(this._cardCategory, val);
     this.toggleClass(this._cardCategory, categories.get(val));
   }

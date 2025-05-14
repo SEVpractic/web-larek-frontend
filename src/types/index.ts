@@ -74,7 +74,7 @@ export type Page = {
 	pageWrapper: HTMLElement;
 }
 
-export type Card = ProductItem & { buttonText: string }
+export type Card = ProductItem & { buttonText: string, basketItemIndex: number }
 
 export type Modal = {
 	modalСlose: HTMLButtonElement;
