@@ -30,14 +30,6 @@ export class CardView extends Component<Card> {
     }
   }
 
-  set id(id: string) {
-    this.container.dataset.id = id;
-  }
-
-  get id(): string {
-    return this.container.dataset.id || '';
-  }
-
   set image(val: string) {
     if (!this._cardImage) return;
     this.setImage(this._cardImage, val, this.title);
