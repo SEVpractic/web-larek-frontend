@@ -15,21 +15,22 @@ export class BasketView extends Component<Order> {
     this._basketButton = this.container.querySelector('.basket__button');
 
     if (this._basketButton) {
-        this._basketButton.addEventListener('click', () => {
-            eventEmiter.emit('order_form:open');
-        });
+      this._basketButton.addEventListener('click', () => {
+          eventEmiter.emit('order_form:open');
+      });
     }
+    this.basketList = [];
   }
 
   set basketList(items: HTMLElement[]) {
     if (items.length) {
-        this._basketList.replaceChildren(...items);
-        this.setDisabled(this._basketList, false);
+      this._basketList.replaceChildren(...items);
+      this.setDisabled(this._basketButton, false);
     } else {
-        this._basketList.replaceChildren(
-            createElement('p', { textContent: 'В корзине нет товаров' })
-        );
-        this.setDisabled(this._basketList, true);
+      this._basketList.replaceChildren(
+          createElement('p', { textContent: 'В корзине нет товаров' })
+      );
+      this.setDisabled(this._basketButton, true);
     }
   }
 

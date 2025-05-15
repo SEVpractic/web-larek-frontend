@@ -4,9 +4,10 @@ import { MainModel } from './components/model/MainModel';
 import { ProductApi } from './components/model/ProductApi';
 import { BasketView } from './components/view/BasketView';
 import { CardView } from './components/view/CardView';
+import { OrderView } from './components/view/OrderView';
 import { PageView } from './components/view/PageView';
 import './scss/styles.scss';
-import { Card, cardButtonTexts, ProductItem } from './types';
+import { Card, cardButtonTexts, ValidationResult, Payment, ProductItem } from './types';
 
 import { API_URL } from './utils/constants';
 import { cloneTemplate, ensureElement } from './utils/utils';
@@ -16,6 +17,8 @@ const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
 const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
 const modalContainer = ensureElement<HTMLElement>('#modal-container');
 const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
+const orderTemplate = ensureElement<HTMLTemplateElement>('#order');
+const contactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');
 
 const eventEmitter = new EventEmitter();
 const productApi = new ProductApi(API_URL);
@@ -23,6 +26,8 @@ const mainModel = new MainModel({}, eventEmitter);
 const pageView = new PageView(document.body, eventEmitter);
 const modal = new Modal(modalContainer, eventEmitter);
 const basketView = new BasketView(cloneTemplate(basketTemplate), eventEmitter);
+const orderPaymentView = new OrderView(cloneTemplate(orderTemplate),  eventEmitter);
+const orderContatsView = new OrderView(cloneTemplate(contactsTemplate),  eventEmitter);
 
 //отладочные сообщения
 eventEmitter.onAll(({ eventName, data }) => {
@@ -84,17 +89,63 @@ eventEmitter.on<ProductItem[]>('basket:changed', items => {
       }
     );
     return card.render({ ...item, basketItemIndex: index++});
-  });  
+  });
+  basketView.basketPrice = mainModel.getTotal();
 })
 
 eventEmitter.on('basket:click', () => {
-    modal.render({
-        content: basketView.render(),
-    });
+  modal.render({
+      content: basketView.render(),
+  });
+});
+
+eventEmitter.on('order_form:open', () => {
+  orderPaymentView.activePaymentBtn = mainModel.getOrderField('payment') as Payment;
+  modal.render({
+    content: orderPaymentView.render({
+      address: mainModel.getOrderField('address'),
+      errors: "",
+      valid: mainModel.validateOrder().isPaymentFormValid
+    })
+  });
+});
+
+eventEmitter.on(
+  /^(order|contacts).*change$/, 
+  (data: { field: 'address' | 'phone' | 'email' | 'payment', value: string }) => {
+    mainModel.setOrderField(data.field, data.value);
+    if (data.field === 'payment') {
+      orderPaymentView.activePaymentBtn = (data.value as Payment);
+    }
+  }
+);
+
+eventEmitter.on<ValidationResult>('form_input_errors:changed', (validationResult) => {
+  orderPaymentView.valid = validationResult.isPaymentFormValid;
+  orderPaymentView.errors = [validationResult.payment, validationResult.address]
+    .filter(el => !!el)
+    .join('; ');
+
+  orderContatsView.valid = validationResult.isContactsFormValid;
+  orderContatsView.errors = [validationResult.email, validationResult.phone]
+    .filter(el => !!el)
+    .join('; ');
+})
+
+eventEmitter.on('order:submit', () => {
+  modal.render({
+    content: orderContatsView.render({
+      email: mainModel.getOrderField('email'),
+      phone: mainModel.getOrderField('phone'),      
+      errors: "",
+      valid: mainModel.validateOrder().isContactsFormValid
+    })
+  });
 });
 
 productApi.getProductList()
   .then(res => mainModel.catalogItems =res)
   .catch(err => {
     console.error(err);
-});
+  }
+);

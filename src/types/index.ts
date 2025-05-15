@@ -1,3 +1,5 @@
+import { OrderView } from "../components/view/OrderView";
+
 export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
 export type ApiListResponse<Type> = {
@@ -22,6 +24,10 @@ export type Order = {
 	total: number;
 	items: string[];
 };
+
+export enum Payment {
+	card = 'card', cash = 'cash'
+}
 
 export type OrderRespose = {
 	id: string;
@@ -109,7 +115,8 @@ export type SuccessView = {
 	orderSuccessClose: HTMLButtonElement;
 }
 
-export type FormError = Partial<Record<keyof Order, string>>;
+export type ValidationResult = Partial<Record<keyof Order, string> 
+	& { isContactsFormValid: boolean, isPaymentFormValid: boolean }>;
 
 export const categories = new Map<string, string> ([
   ['софт-скил', 'card__category_soft'],

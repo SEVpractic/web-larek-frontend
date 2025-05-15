@@ -1,4 +1,4 @@
-import { IEvents, Main, ProductItem, Order, FormError } from "../../types";
+import { IEvents, Main, ProductItem, Order, ValidationResult } from "../../types";
 import { Model } from "../base/Model";
 
 export class MainModel extends Model<Main> {
@@ -72,8 +72,6 @@ export class MainModel extends Model<Main> {
 
     this.setTotal();
     this.emitChanges('basket:changed', this.getCards(this._order.items));
-
-    console.log('order: ', this._order)
   }
 
   clearOrdersBasket(): void {
@@ -105,51 +103,39 @@ export class MainModel extends Model<Main> {
     return this._order.items;
   }
 
-  validatePayment(): boolean {
-    const errors: FormError = {};
+  setOrderField(field: 'address' | 'phone' | 'email' | 'payment', value: string) {
+    if (!this._order) return;
+    this._order[field] = value;
+    this.validateOrder();
+  }
+
+  getOrderField(field: 'address' | 'phone' | 'email' | 'payment'):  string {
+    return this._order?.[field] ?? '';
+  }
+
+  validateOrder(): ValidationResult {
+    const result: ValidationResult = {};
+    result.isPaymentFormValid = true;
+    result.isContactsFormValid = true;
 
     if (!this._order.payment) {
-      errors.payment = "Не выбран способ оплаты";
+      result.payment = "Не выбран способ оплаты";
+      result.isPaymentFormValid = false;
     }
     if (!this._order.address) {
-      errors.address = "Не введен адрес доставки";
+      result.address = "Не введен адрес доставки";
+      result.isPaymentFormValid = false;
     }
-
-    this.emitChanges('form_input_errors:changed', { errors });
-
-    return Object.keys(errors).length === 0;
-  }
-
-  setPayment(payment: string, address: string): void {
-    this._order.payment = payment;
-    this._order.address = address;
-
-    if (this.validatePayment()) {
-      this.emitChanges('order:changed', this._order);
-    }
-  }
-
-  validateContacts(): boolean {
-    const errors: FormError = {};
-
     if (!this._order.email) {
-      errors.email = "Не указан email";
-    }
+      result.email = "Не указан email";
+      result.isContactsFormValid = false;
+    }    
     if (!this._order.phone) {
-      errors.phone = "Не указан номер телефона";
+      result.phone = "Не указан номер телефона";
+      result.isContactsFormValid = false;
     }
 
-    this.emitChanges('form_input_errors:changed', { errors });
-
-    return Object.keys(errors).length === 0;
-  } 
-
-  setContacts(email: string, phone: string): void {
-    this._order.email = email;
-    this._order.phone = phone;
-
-    if (this.validateContacts) {
-      this.emitChanges('order:changed', this._order);
-    }
+    this.emitChanges('form_input_errors:changed', result);
+    return result;
   }
 }
