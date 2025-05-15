@@ -62,6 +62,10 @@ export class CardView extends Component<Card> {
     this.setText(this._cardButton, val);
   }
 
+  set isButtonDisabled(val: boolean) {
+    this.setDisabled(this._cardButton, val);
+  }
+
   get cardButton(): HTMLButtonElement {
     return this._cardButton;
   }

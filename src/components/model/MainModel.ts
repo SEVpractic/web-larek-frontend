@@ -62,7 +62,7 @@ export class MainModel extends Model<Main> {
   }
 
   toggleProductInOrder(id: string): void {
-    if (!this.hasCardById(id)) return;
+    if (!this.getCard(id)?.price) return;
 
     if (!this._order.items.includes(id)) {
       this._order.items.push(id);

@@ -68,7 +68,8 @@ eventEmitter.on<Card>('preview:changed', item => {
   modal.render({
     content: card.render({
       ...item, 
-      buttonText: cardButtonTexts.get(mainModel.getCartActionStatus(item.id))
+      buttonText: cardButtonTexts.get(mainModel.getCartActionStatus(item.id)),
+      isButtonDisabled: mainModel.getCartActionStatus(item.id) === 'disabled'
     })
   });
 });
