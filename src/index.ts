@@ -6,6 +6,7 @@ import { BasketView } from './components/view/BasketView';
 import { CardView } from './components/view/CardView';
 import { OrderView } from './components/view/OrderView';
 import { PageView } from './components/view/PageView';
+import { SuccessView } from './components/view/SuccessView';
 import './scss/styles.scss';
 import { Card, cardButtonTexts, ValidationResult, Payment, ProductItem } from './types';
 
@@ -19,6 +20,7 @@ const modalContainer = ensureElement<HTMLElement>('#modal-container');
 const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 const orderTemplate = ensureElement<HTMLTemplateElement>('#order');
 const contactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');
+const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 
 const eventEmitter = new EventEmitter();
 const productApi = new ProductApi(API_URL);
@@ -28,6 +30,10 @@ const modal = new Modal(modalContainer, eventEmitter);
 const basketView = new BasketView(cloneTemplate(basketTemplate), eventEmitter);
 const orderPaymentView = new OrderView(cloneTemplate(orderTemplate),  eventEmitter);
 const orderContatsView = new OrderView(cloneTemplate(contactsTemplate),  eventEmitter);
+const successView = new SuccessView(
+  cloneTemplate(successTemplate), 
+  { onClick: () => { modal.close(); }}
+);
 
 //отладочные сообщения
 eventEmitter.onAll(({ eventName, data }) => {
@@ -78,7 +84,9 @@ eventEmitter.on<ProductItem>('card:click', item => mainModel.toggleProductInOrde
 
 eventEmitter.on('modal:open', () => pageView.lock = true);
 
-eventEmitter.on('modal:close', () => pageView.lock = false);
+eventEmitter.on('modal:close', () => {
+  pageView.lock = false;
+});
 
 eventEmitter.on<ProductItem[]>('basket:changed', items => {
   pageView.counter = mainModel.items.length;
@@ -101,6 +109,7 @@ eventEmitter.on('basket:click', () => {
 });
 
 eventEmitter.on('order_form:open', () => {
+  orderPaymentView.clearAll();
   orderPaymentView.activePaymentBtn = mainModel.getOrderField('payment') as Payment;
   modal.render({
     content: orderPaymentView.render({
@@ -144,8 +153,21 @@ eventEmitter.on('order:submit', () => {
   });
 });
 
+eventEmitter.on('contacts:submit', () => {
+  productApi.postOrder(mainModel.order)
+    .then(res => {
+      mainModel.clearOrder();
+      modal.render({
+        content: successView.render({ total: res.total })
+      });
+    })
+    .catch((err) => {
+        console.error(`Ошибка при оплате заказа ${err}`);
+    });
+});
+
 productApi.getProductList()
-  .then(res => mainModel.catalogItems =res)
+  .then(res => mainModel.catalogItems = res)
   .catch(err => {
     console.error(err);
   }

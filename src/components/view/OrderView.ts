@@ -35,7 +35,7 @@ export class OrderView extends Form<Order> {
     }
   }
 
-  set addres(val: string) {
+  set address(val: string) {
     if (!this._addressInput) return;
     this._addressInput.value = val;
   }
@@ -71,5 +71,11 @@ export class OrderView extends Form<Order> {
 
     this.toggleClass(this._cardButton, 'button_alt-active', false);
     this.toggleClass(this._cashButton, 'button_alt-active', false);
+  }
+
+  clearAll() {
+    this.email = '';
+    this.phone = '';
+    this.address = '';
   }
 }

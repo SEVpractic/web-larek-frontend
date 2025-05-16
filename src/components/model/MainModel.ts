@@ -74,20 +74,15 @@ export class MainModel extends Model<Main> {
     this.emitChanges('basket:changed', this.getCards(this._order.items));
   }
 
-  clearOrdersBasket(): void {
-    this._order.items = [];
-    this.setTotal();
-
-    this.emitChanges('basket:changed', this.getCards(this._order.items));
-  }
-
-  clearOrdersInfo(): void {
+  clearOrder(): void {
+    console.log('перед удалением', this.order);
     this._order.address = "";
     this._order.email = "";
     this._order.payment = "";
     this._order.phone = "";
-
-    this.emitChanges('order:changed', this._order );
+    this._order.items = [];
+    this.setTotal();
+    this.emitChanges('basket:changed', this.getCards(this._order.items));
   }
 
   setTotal(): void {
@@ -111,6 +106,10 @@ export class MainModel extends Model<Main> {
 
   getOrderField(field: 'address' | 'phone' | 'email' | 'payment'):  string {
     return this._order?.[field] ?? '';
+  }
+
+  get order(): Order {
+    return this._order;
   }
 
   validateOrder(): ValidationResult {
