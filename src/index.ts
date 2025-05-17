@@ -116,7 +116,7 @@ eventEmitter.on('basket:click', () => {
 });
 
 eventEmitter.on('order_form:open', () => {
-	orderPaymentView.clearAll();
+	orderPaymentView.clearAllInputs();
 	orderPaymentView.activePaymentBtn = mainModel.getOrderField(
 		'payment'
 	) as Payment;
