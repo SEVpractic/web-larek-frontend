@@ -1,6 +1,6 @@
-import {Component} from "../base/Component";
-import {IEvents} from "../../types/index";
-import {ensureElement} from "../../utils/utils";
+import {Component} from "../../base/Component";
+import {IEvents} from "../../../types/index";
+import {ensureElement} from "../../../utils/utils";
 
 interface IFormState {
     valid: boolean;

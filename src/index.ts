@@ -1,5 +1,5 @@
 import { EventEmitter } from './components/base/events';
-import { Modal } from './components/common/Modal';
+import { Modal } from './components/view/common/Modal';
 import { MainModel } from './components/model/MainModel';
 import { ProductApi } from './components/model/ProductApi';
 import { BasketView } from './components/view/BasketView';

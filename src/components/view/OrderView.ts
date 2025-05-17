@@ -1,5 +1,5 @@
 import { IEvents, Order, PaymentType } from '../../types';
-import { Form } from '../common/Form';
+import { Form } from './common/Form';
 
 export class OrderView extends Form<Order> {
 	private _cardButton?: HTMLButtonElement;
@@ -72,11 +72,11 @@ export class OrderView extends Form<Order> {
 		this.toggleClass(this[payment], 'button_alt-active', true);
 	}
 
-	get card() {
+	private get card() {
 		return this._cardButton;
 	}
 
-	get cash() {
+	private get cash() {
 		return this._cashButton;
 	}
 

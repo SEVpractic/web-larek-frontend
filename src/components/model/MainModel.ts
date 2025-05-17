@@ -37,18 +37,18 @@ export class MainModel extends Model<Main> {
 		return Array.from(this._catalogItems.values());
 	}
 
-	private getCardById(id: string): ProductItem {
+	private getItemById(id: string): ProductItem {
 		return this._catalogItems.get(id);
 	}
 
-	private getCardsByIds(ids: string[]): ProductItem[] {
+	private getItemByIds(ids: string[]): ProductItem[] {
 		return ids
 			.map((id) => this._catalogItems.get(id))
 			.filter((item): item is ProductItem => item !== undefined);
 	}
 
 	set preview(id: string | null) {
-		const card = this.getCardById(id);
+		const card = this.getItemById(id);
 
 		if (!card) return;
 		this._preview = id;
@@ -57,7 +57,7 @@ export class MainModel extends Model<Main> {
 	}
 
 	getCartActionStatus(id: string): 'add' | 'remove' | 'disabled' {
-		const item = this.getCardById(id);
+		const item = this.getItemById(id);
 		if (!item || !item.price) return 'disabled';
 
 		if (this._order.items.includes(id)) {
@@ -67,7 +67,7 @@ export class MainModel extends Model<Main> {
 	}
 
 	toggleProductInOrder(id: string): void {
-		if (!this.getCardById(id)?.price) return;
+		if (!this.getItemById(id)?.price) return;
 
 		if (!this._order.items.includes(id)) {
 			this._order.items.push(id);
@@ -76,7 +76,7 @@ export class MainModel extends Model<Main> {
 		}
 
 		this.calculateTotal();
-		this.emitChanges('basket:changed', this.getCardsByIds(this._order.items));
+		this.emitChanges('basket:changed', this.getItemByIds(this._order.items));
 	}
 
 	clearOrder(): void {
@@ -86,11 +86,11 @@ export class MainModel extends Model<Main> {
 		this._order.phone = '';
 		this._order.items = [];
 		this.calculateTotal();
-		this.emitChanges('basket:changed', this.getCardsByIds(this._order.items));
+		this.emitChanges('basket:changed', this.getItemByIds(this._order.items));
 	}
 
 	private calculateTotal(): void {
-		this._order.total = this.getCardsByIds(this._order.items).reduce(
+		this._order.total = this.getItemByIds(this._order.items).reduce(
 			(total, item) => total + item.price,
 			0
 		);
