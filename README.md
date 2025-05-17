@@ -80,7 +80,7 @@
 
 **Методы:**
 - `toggleClass(element: HTMLElement, className: string, force?: boolean)` — переключает класс. С параметром `force` может насильно добавить или удалить класс.
-- `render(data?: Partial): HTMLElement` — возвращает корневой DOM-элемент.
+- `render(data?: Partial<T>): HTMLElement` — возвращает корневой DOM-элемент.
 **Приватные методы:**
 - `protected setText(element: HTMLElement, value: unknown)` — устанавливает текст в элемент.
 - `protected setDisabled(element: HTMLElement, state: boolean)` — блокирует/разблокирует элемент.
@@ -108,13 +108,13 @@
 
 ---
 #### `MainModel`
-Класс, описывающий модель главной страницы. Хранит список карточек, id выбранной для просмотра карточки, информацию о заказе. Отвечает за логику взаимодействия с этими данными. Наследует `Model`, типизируется типом `Main`. Использует родительский конструктор.
+Класс, описывающий модель главной страницы. Хранит список товаров, id выбранного для просмотра товара, информацию о заказе. Отвечает за логику взаимодействия с этими данными. Наследует `Model`, типизируется типом `Main`. Использует родительский конструктор.
 
 **Тип `Main`:**
 ```ts
 export type Main = {
-  catalogItems: Map<string, ProductItem>;  // карточки в каталоге
-  preview: string | null;                  // id карточки в превью
+  catalogItems: Map<string, ProductItem>;  // товары в каталоге
+  preview: string | null;                  // id товара в превью
   order: Order;                            // модель заказа
 };
 ```
@@ -146,23 +146,24 @@ export type Order = {
 ```
 
 **Методы:**
-- `setCatalogItems(items: ProductItem[]): void` — заполняет каталог товарами. 
-- `getCard(id: string): ProductItem` — возвращает карточку по id.    
-- `getCards(id: string[]): ProductItem[]` — возвращает карточки по массиву id.    
-- `getCards(): ProductItem[]` — возвращает все карточки из каталога.
-- `hasCardById(id: string): boolean` — проверяет наличие карточки по переданному id.
-- `set preview(id: string | null)` — устанавливает выбранную карточку.
-- `addItemToOrder(id: string): void` — добавляет товар в заказ (корзину), если его там ещё нет.    
-- `removeItemFromOrder(id: string): void` — удаляет товар из заказа по id. 
-- `clearOrdersBasket(): void` — очищает массив добавленных в заказ позиций (корзину). Очищает стоимость. 
-- `clearOrdersInfo(): void` — очищает веденные данные пользователя.
-- `set total(): void` — задает общую стоимость исходя из массива товаров в корзине.
+- `set catalogItems(items: ProductItem[])` — заполняет каталог товарами. 
+- `get catalogItems(): ProductItem[]` — возвращает все товары из каталога.
+- `set preview(id: string | null)` — устанавливает выбранный товар.
+- `getCartActionStatus(id: string): 'add' | 'remove' | 'disabled'` — возвращает доступный статус действий с товаром (можно добавить, удалить или ничего нельзя седлать)
+- `toggleProductInOrder(id: string): void` — добавляет товар в заказ, если его там ещё нет или удаляет товар, если он там есть. 
+- `clearOrder(): void` — очищает массив добавленных в заказ позиций. Очищает стоимость. 
 - `get total(): number` — возвращает текущую общую стоимость.
-- `getItems(): string[]` — возвращает массив id добавленных товаров.
-- `validatePayment(payment: string, address: string): boolean` — проверяет корректность данных формы оплаты.    
+- `get items(): string[]` — возвращает массив id добавленных товаров.
+- `validatePayment(): boolean` — проверяет корректность данных формы оплаты.    
 - `setPayment(payment: string, address: string): void` — сохраняет данные формы оплаты.    
-- `validateContacts(email: string, phone: string): boolean` — проверяет корректность контактной информации.    
-- `setContacts(email: string, phone: string): void` — сохраняет контактные данные покупателя.    
+- `setOrderFieldValue(field: 'address' | 'phone' | 'email' | 'payment', value: string)` - задает значение переданного поля заказа.
+- `getOrderFieldValue(field: 'address' | 'phone' | 'email' | 'payment'): string` - возвращает значение переданного поля заказа.
+- `get order(): Order` - возвращает объект заказа.
+- `validateOrder(): ValidationResult` — валидирует данные заказа.
+**Приватные методы:**
+- `getItemById(id: string): ProductItem` — возвращает товар по id.    
+- `getItemByIds(ids: string[]): ProductItem[]` — возвращает массив товаров по массиву id.   
+- `calculateTotal(): void` — высчитывает общую стоимость товаров в заказе и заполняет соответствующее поле.
 
 ---
 #### `ProductApi`
@@ -174,27 +175,24 @@ export type Order = {
 
 **Методы:**
 - `GetProductItem(id: string): ProductItem` — получает товар по id.    
-- `GetProductList(id: string): ProductItem[]` — получает список всех товаров.    
+- `GetProductList(): Promise<ProductItem[]>` — получает список всех товаров.    
 - `PostOrder(orderBody: Order): OrderRespose` — отправляет заказ на сервер.
 
 ---
 ### Слой представления (View компоненты)
 
-**Путь:** `src/components/View/`
+**Путь:** `src/components/View/common`
 
----
-#### `PageView`
+___
+#### `Modal`
 
-Компонент представления главной страницы. Отвечает за отображение каталога товаров и количества товаров в корзине. Позволяет открыть модальные окна: с подробной информацией о товаре (при клике на карточку) и с корзиной (при клике на иконку корзины). При открытии модального окна блокирует прокрутку страницы.
-Наследует абстрактный обобщённый класс `Component`, указывая в качестве типа данных структуру главной страницы `Page`.
+Класс - представление модального окна. Содержит произвольный контент, может быть закрыт кнопкой-крестиком или по клику на оверлей. Используется для отображения карточки товара, корзины или форм ввода информации.
+Наследует абстрактный обобщённый класс `Component`, указывая в качестве типа данных интерфейс `IModalData`. 
 
-**Тип `Page`:**
+**Интерфейс `IModalData`:**
 ```ts
-export type Page = {
-  headerBasket: HTMLElement; //кнопка корзины
-  basketCounter: HTMLElement; //счетчик элементов в корзине
-  gallery: HTMLElement; //галерея карточек
-  pageWrapper: HTMLElement; //обертка страницы
+interface IModalData {
+    content: HTMLElement;
 }
 ```
 
@@ -203,9 +201,55 @@ export type Page = {
 - `events: IEvents` — интерфейс брокера событий.
 
 **Методы:**
-- `setCounter(count: number)` — установить количество товаров в корзине.
-- `setGallery(items: HTMLElement[])` — поместить массив карточек в галерею.
-- `setLock(isLock: boolean)` — заблокировать или разблокировать прокрутку страницы.
+- `set content(count: HTMLElement)` — задать содержимое окна.
+- `open()` — открыть модальное окно.
+- `close()` — закрыть модальное окно.
+- `render(data: IModalData): HTMLElement` — возвращает корневой DOM-элемент.
+
+___
+#### `Form`
+
+Класс - обобщенное представление формы ввода информации. Позволяет пользователю взаимодействовать с формой и отображает сообщения об ошибках, при необходимости. В классе созданы эвентлистенеры всех интерактивных элементов с типом `input` и `submit`, для генерации событий. Используется только через наследников.
+Наследует абстрактный обобщённый класс `Component`, указывая в качестве типа данных интерфейс `IFormState`. Не используется напрямую.
+
+**Тип `Form`:**
+```ts
+interface IFormState {
+    valid: boolean;
+    errors: string;
+}
+```
+
+**Конструктор:**
+- `container: HTMLElement` — DOM-элемент-контейнер для компонента.
+- `events: IEvents` — интерфейс брокера событий.
+
+**Методы:**
+- `set errors(val: string)` — установить текст ошибок.
+- `set valid(value: boolean)` — установить признак валидности формы.
+- `render(state: Partial<T> & IFormState)` — возвращает корневой DOM-элемент.
+
+**Приватные методы:**
+- `protected onInputChange(field: keyof T, value: string)` — сгенерировать событие при изменении поля
+
+___
+
+**Путь:** `src/components/View/`
+
+---
+#### `PageView`
+
+Компонент представления главной страницы. Отвечает за отображение каталога товаров и количества товаров в корзине. Позволяет открыть модальное окно: с корзиной (при клике на иконку корзины). При открытии модального окна блокирует прокрутку страницы.
+Наследует абстрактный обобщённый класс `Component`, указывая в качестве типа данных структуру главной страницы `ProductItem`.
+
+**Конструктор:**
+- `container: HTMLElement` — DOM-элемент-контейнер для компонента.
+- `events: IEvents` — интерфейс брокера событий.
+
+**Методы:**
+- `set counter(count: number)` — установить количество товаров в корзине.
+- `set gallery(items: HTMLElement[])` — поместить массив карточек в галерею.
+- `set lock(isLock: boolean)` — заблокировать или разблокировать прокрутку страницы.
 
 ___
 #### `CardView`
@@ -214,175 +258,82 @@ ___
 - `.gallery__item .card` — карточка из галереи на главной странице    
 - `.card .card_full` — карточка в модальном окне (детальный вид)    
 - `.basket__item .card .card_compact` — карточка в списке корзины
+Позволяет выполнить переданное действие по клику на карточку из списка карточек (открытие модального окна с подробной информацией) или клику на кнопку (добавление / удаление товара в корзину).
 Наследует абстрактный обобщённый класс `Component`, указывая в качестве типа данных структуру `Card`. 
 
 **Тип `Card`:**
 ```ts
-export type Card = {
-  cardImage?: HTMLImageElement; //изображение товра
-  cardText?: HTMLElement; //описание товара
-  cardCategory?: HTMLElement; //категория товара
-  cardTitle: HTMLElement; //название товара
-  cardPrice: HTMLElement; //стоимость товара
-  cardButton?: HTMLButtonElement; //кнопка карточки товара
-  basketItemIndex?: HTMLElement; //индекс карточки товара
-}
+export type Card = ProductItem & {
+  buttonText: string;             //текст кнопки
+  basketItemIndex: number;        //индекс карточки
+  isButtonDisabled: boolean;      //блокировка кнопки карточки
+};
 ```
 
 **Конструктор:**
 - `container: HTMLElement` — DOM-элемент-контейнер для компонента.
 - `actions?: Action` — (необязательный) объект с обработчиками событий (например, клик по кнопке "В корзину").
-- `events: IEvents` — интерфейс брокера событий.
 
 **Методы:**
-- `set Id(count: string)` — установить значение id элемента.
-- `get Id(): string` — вернуть значение id элемента.
-- `set cardImage(val: string)` — установить значение ссылки на картинку.
-- `set cardText(val: string)` — установить значение описания.
-- `set cardCategory(val: string)` — установить значение категории.
-- `set cardTitle(val: string)` — установить значение описания карточки.
-- `set cardPrice(val: number | null)` — установить значение цены и текст `бесценно`.
-- `set basketItemIndex(val: number)` — установить значение цены.
-- `setButtonText(val: string)` — установить текст кнопки.
-- `get cardButton(): HTMLButtonElement` — возвращает кнопку
-
-___
-#### `ModalView`
-
-Класс - представление модального окна. Содержит произвольный контент, может быть закрыт кнопкой-крестиком или по клику на оверлей. Используется для отображения карточки товара или корзины.
-Наследует абстрактный обобщённый класс `Component`, указывая в качестве типа данных структуру `Modal`. 
-
-**Тип `Modal`:**
-```ts
-export type Modal = {
-  modalСlose: HTMLButtonElement; //кнопка закрытия окна
-  modalContent: HTMLElement; //контент окна
-}
-```
-
-**Конструктор:**
-- `container: HTMLElement` — DOM-элемент-контейнер для компонента.
-- `events: IEvents` — интерфейс брокера событий.
-
-**Методы:**
-- `set modalContent(count: HTMLElement)` — задать содержимое окна.
-- `open()` — открыть модальное окно.
-- `close()` — закрыть модальное окно.
+- `set image(val: string)` — установить значение ссылки на картинку.
+- `set description(val: string)` — установить значение описания.
+- `set category(val: string)` — установить значение категории.
+- `set title(val: string)` — установить значение тайтла карточки.
+- `set price(val: number | null)` — установить значение цены или текст `бесценно`.
+- `set basketItemIndex(val: number)` — установить индекс корзины.
+- `set buttonText(val: string)` — установить текст кнопки.
+- `set isButtonDisabled(val: boolean)` — установить признак блокировки кнопки.
 
 ___
 #### `BasketView`
 
 Компонент отображения содержимого корзины. Отображает список товаров, общую стоимость и кнопку перехода к оформлению заказа.
-Наследует абстрактный обобщённый класс `Component`, указывая в качестве типа данных структуру `Basket`. 
-
-**Тип `Basket`:**
-```ts
-export type Basket = {
-  basketList: HTMLElement; //сисок карточек в корзине
-  basketPrice: HTMLElement; //итоговая цена
-  basketButton: HTMLButtonElement; //кнопка перехода к форме оплаты
-}
-```
+Наследует абстрактный обобщённый класс `Component`, указывая в качестве типа данных тип `Order`. 
 
 **Конструктор:**
 - `container: HTMLElement` — DOM-элемент-контейнер для компонента.
 - `events: IEvents` — интерфейс брокера событий.
 
 **Методы:**
-- `set basketList(count: HTMLElement[])` — установить содержимое списка карточек.
+- `set basketList(items: HTMLElement[])` — установить содержимое списка карточек.
 - `set basketPrice(total: number)` — установить суммарную стоимость.
-- `get basketButton(): HTMLButtonElement` — возвращает кнопку
 
 ___
-#### `FormView`
+#### `OrderView`
 
-Класс - обобщенное представление формы ввода информации. Позволяет пользователю взаимодействовать с формой и отображает сообщения об ошибках, при необходимости. В классе созданы эвентлистенеры всех интерактивных элементов с типом `input` и `submit`, для генерации событий.
-Наследует абстрактный обобщённый класс `Component`, указывая в качестве типа данных структуру `Form`. 
-
-**Тип `Form`:**
-```ts
-export type Form = {
-  submit: HTMLButtonElement;// кнопка сабмита формы
-  formErrors: HTMLElement;// ошибки формы
-}
-```
+Компонент формы заказа. 
+Наследует обобщённый класс `Form`, указывая в качестве типа данных `Order`. В зависимости от переданного контейнера формирует один из видов формы заказа:
+- форма выбора типа оплаты и ввода адреса доставки  
+- форма ввода контактной информации  
 
 **Конструктор:**
 - `container: HTMLElement` — DOM-элемент-контейнер для компонента.
-- `events: IEvents` — интерфейс брокера событий.
-
-**Методы:**
-- `setValid(isValid: boolean)` — установить состояние валидации формы.
-- `set formErrors(val: string)` — установить текст ошибок.
-
-**Приватные методы:**
-- `protected emitOnChange(field: keyof T, value: string)` — сгенерировать событие при изменении поля
-___
-#### `OrderFormView`
-
-Компонент формы с выбором способа оплаты и адресом доставки. В классе созданы эвентлистенеры кнопок выбора типа оплаты, для генерации событий.
-Наследует обобщённый класс `FormView`, указывая в качестве типа данных структуру `Form`. 
-
-**Тип `PaymentForm`:**
-```ts
-export type PaymentForm = {
-  payment: string;// значение типа платежа
-  address: string;// значение адреса доставки
-  cardBtn: HTMLButtonElement;//кнопка оплаты онлайн
-  cashBtn: HTMLButtonElement;//кнопка оплаты при получении
-}
-```
-
-**Конструктор:**
-- `container: HTMLElement` — DOM-элемент-контейнер для компонента.
-- `events: IEvents` — интерфейс брокера событий.
+- `eventEmiter: IEvents` — интерфейс брокера событий.
 
 **Методы:**
 - `set address(val: string)` — установить адрес доставки.
-- `get cardBtn(): HTMLButtonElement` — возвращает кнопку оплаты онлайн.
-- `get cashBtn(): HTMLButtonElement` — возвращает кнопку оплаты при получении.
-- set payment(type: 'card' | 'cash' | null ) — установить выбранный тип оплаты.
-___
-#### `ContactsFormView`
-
-Форма для ввода контактной информации пользователя: email и телефон.
-Наследует обобщённый класс `FormView`, указывая в качестве типа данных структуру `ContactsFormView`. 
-
-**Тип `ContactsFormView`:**
-```ts
-export type ContactsFormView = {
-  email: string; // значние email пользователя
-  phone: string; // значние phone пользователя
-}
-```
-
-**Конструктор:**
-- `container: HTMLElement` — DOM-элемент-контейнер для компонента.
-- `events: IEvents` — интерфейс брокера событий.
-
-**Методы:**
+- `set phone(val: string)` — установить номер телефона.
 - `set email(val: string)` — установить email.
-- `set phone(val: string)` — установить телефон.
+- `set activePaymentBtn(payment: PaymentType)` — установить выбранный тип оплаты.
+- `clearPaymentStyle()` — очистить выбранный тип оплаты.
+- `clearAllInputs()` — очистить все поля ввода.
+
+**Приватные методы:**
+- `private get card()` — возвращает кнопку кнопку оплаты карточкой
+- `private get cash()` — возвращает кнопку кнопку оплаты наличными
+
 ___
 #### `SuccessView`
 
 Компонент финального сообщения после успешного оформления заказа. Показывает сумму заказа и кнопку возврата на главный экран. Cрабатывает после успешной отправки POST запроса.
-Наследует абстрактный обобщённый класс `Component`, указывая в качестве типа данных структуру `SuccessView`. 
-
-**Тип `SuccessView`:**
-```ts
-export type SuccessView = {
-  orderSuccessDescription: HTMLButtonElement; //отображение стоимости успешного заказа
-  orderSuccessClose: HTMLButtonElement; //кнопка возврата
-}
-```
+Наследует абстрактный обобщённый класс `Component`, указывая в качестве типа данных тип `Order`. 
 
 **Конструктор:**
 - `container: HTMLElement` — DOM-элемент-контейнер для компонента.
-- `events: IEvents` — интерфейс брокера событий.
+- `actions?: Action` — (необязательный) объект с обработчиками событий.
 
 **Методы:**
-- `set orderSuccessDescription(total: number)` — установить стоимость заказа.
+- `set total(total: number)` — установить стоимость заказа.
 ___
 ### Взаимодействие классов различных слоев
 
@@ -392,23 +343,22 @@ ___
 
 ### Список событий
 
-| Событие                      | Источник                     | Описание                                                                                     |
-| ---------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------- |
-| `gallery:click`              | `PageView`                   | Клик по карточке на главной странице                                                         |
-| `basket:click`               | `PageView`                   | Клик по корзине на главной странице                                                          |
-| `card:add`                   | `CardView`                   | Клик по кнопке добавления карточки в корзину                                                 |
-| `modal:close`                | `ModalView`<br>`SuccessView` | Клик на кнопку закрытия модального окна или оверлей<br>Клик по кнопке "За новыми покупками!" |
-| `card:remove`                | `BasketView`                 | Клик по кнопке удаления карточки из корзины                                                  |
-| `order_form:open`            | `BasketView`                 | Клик по кнопке оформления заказа                                                             |
-| `form_input:changed`         | `FormView`                   | Пользователь ввел информацию в инпут адреса доставки, email или телефона                     |
-| `order_form_payment:changed` | `OrderFormView`              | Пользователь выбрал тип оплаты                                                               |
-| `order_form:submit`          | `OrderFormView`              | Клик по кнопке далее в форме оплаты и адреса доставки                                        |
-| `contacts_form:submit`       | `ContactsFormView`           | Клик по кнопке оплатить в форме ввода email и телефона                                       |
-| `catalog:changed`            | `MainModel`                  | Обновлен каталог товаров                                                                     |
-| `preview:changed`            | `MainModel`                  | Выбран новый объект - карточка превью                                                        |
-| `basket:changed`             | `MainModel`                  | Изменилось содержимое корзины                                                                |
-| `order:changed`              | `MainModel`                  | Изменились данные о адресе доставки, email или телефоне                                      |
-| `form_input_errors:changed`  | `MainModel`                  | Изменились ошибки валидации                                                                  |
+| Событие                         | Источник     | Описание                                                         |
+| ------------------------------- | ------------ | ---------------------------------------------------------------- |
+| `gallery:click`                 | `PageView`   | Клик по карточке на главной странице                             |
+| `basket:click`                  | `PageView`   | Клик по корзине на главной странице                              |
+| `card:click`                    | `CardView`   | Клик по кнопке карточки                                          |
+| `modal:open`                    | `Modal`      | Открытие модального окна                                         |
+| `modal:close`                   | `Modal`      | Закрытие модального окна                                         |
+| `order_form:open`               | `BasketView` | Клик по кнопке оформления заказа                                 |
+| `/^(order\|contacts).*change$/` | `Form`       | Пользователь ввел информацию в инпут формы или выбрал тип оплаты |
+| `order_form:submit`             | `OrderView`  | Клик по кнопке далее в форме оплаты и адреса доставки            |
+| `contacts_form:submit`          | `OrderView`  | Клик по кнопке оплатить в форме ввода email и телефона           |
+| `catalog:changed`               | `MainModel`  | Обновлен каталог товаров                                         |
+| `preview:changed`               | `MainModel`  | Выбран новый объект - карточка превью                            |
+| `basket:changed`                | `MainModel`  | Изменилось содержимое корзины                                    |
+| `order:changed`                 | `MainModel`  | Изменились данные о адресе доставки, email или телефоне          |
+| `form_input_errors:changed`     | `MainModel`  | Изменились ошибки валидации                                      |
 
 
 ## Установка и запуск
