@@ -23,7 +23,7 @@ export type Order = {
 	items: string[];
 };
 
-export enum Payment {
+export enum PaymentType {
 	card = 'card',
 	cash = 'cash',
 }

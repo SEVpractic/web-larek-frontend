@@ -30,36 +30,34 @@ export class MainModel extends Model<Main> {
 	set catalogItems(items: ProductItem[]) {
 		this._catalogItems = new Map(items.map((el) => [el.id, el]));
 
-		this.emitChanges('catalog:changed', this.getAllCards());
+		this.emitChanges('catalog:changed', this.catalogItems);
 	}
 
-	getCard(id: string): ProductItem {
+  get catalogItems(): ProductItem[] {
+		return Array.from(this._catalogItems.values());
+	}
+
+	private getCardById(id: string): ProductItem {
 		return this._catalogItems.get(id);
 	}
 
-	getCards(ids: string[]): ProductItem[] {
+	private getCardsByIds(ids: string[]): ProductItem[] {
 		return ids
 			.map((id) => this._catalogItems.get(id))
 			.filter((item): item is ProductItem => item !== undefined);
 	}
 
-	getAllCards(): ProductItem[] {
-		return Array.from(this._catalogItems.values());
-	}
-
-	hasCardById(id: string): boolean {
-		return this._catalogItems.has(id);
-	}
-
 	set preview(id: string | null) {
-		if (!this.hasCardById(id)) return;
+		const card = this.getCardById(id);
+
+		if (!card) return;
 		this._preview = id;
 
-		this.emitChanges('preview:changed', this.getCard(this._preview));
+		this.emitChanges('preview:changed', card);
 	}
 
 	getCartActionStatus(id: string): 'add' | 'remove' | 'disabled' {
-		const item = this.getCard(id);
+		const item = this.getCardById(id);
 		if (!item || !item.price) return 'disabled';
 
 		if (this._order.items.includes(id)) {
@@ -69,7 +67,7 @@ export class MainModel extends Model<Main> {
 	}
 
 	toggleProductInOrder(id: string): void {
-		if (!this.getCard(id)?.price) return;
+		if (!this.getCardById(id)?.price) return;
 
 		if (!this._order.items.includes(id)) {
 			this._order.items.push(id);
@@ -77,29 +75,28 @@ export class MainModel extends Model<Main> {
 			this._order.items = this._order.items.filter((el) => el !== id);
 		}
 
-		this.setTotal();
-		this.emitChanges('basket:changed', this.getCards(this._order.items));
+		this.calculateTotal();
+		this.emitChanges('basket:changed', this.getCardsByIds(this._order.items));
 	}
 
 	clearOrder(): void {
-		console.log('перед удалением', this.order);
 		this._order.address = '';
 		this._order.email = '';
 		this._order.payment = '';
 		this._order.phone = '';
 		this._order.items = [];
-		this.setTotal();
-		this.emitChanges('basket:changed', this.getCards(this._order.items));
+		this.calculateTotal();
+		this.emitChanges('basket:changed', this.getCardsByIds(this._order.items));
 	}
 
-	setTotal(): void {
-		this._order.total = this.getCards(this._order.items).reduce(
+	private calculateTotal(): void {
+		this._order.total = this.getCardsByIds(this._order.items).reduce(
 			(total, item) => total + item.price,
 			0
 		);
 	}
 
-	getTotal(): number {
+	get total(): number {
 		return this._order.total;
 	}
 
@@ -107,7 +104,7 @@ export class MainModel extends Model<Main> {
 		return this._order.items;
 	}
 
-	setOrderField(
+	setOrderFieldValue(
 		field: 'address' | 'phone' | 'email' | 'payment',
 		value: string
 	) {
@@ -116,7 +113,7 @@ export class MainModel extends Model<Main> {
 		this.validateOrder();
 	}
 
-	getOrderField(field: 'address' | 'phone' | 'email' | 'payment'): string {
+	getOrderFieldValue(field: 'address' | 'phone' | 'email' | 'payment'): string {
 		return this._order?.[field] ?? '';
 	}
 

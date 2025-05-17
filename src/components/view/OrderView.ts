@@ -1,4 +1,4 @@
-import { IEvents, Order, Payment } from '../../types';
+import { IEvents, Order, PaymentType } from '../../types';
 import { Form } from '../common/Form';
 
 export class OrderView extends Form<Order> {
@@ -34,7 +34,7 @@ export class OrderView extends Form<Order> {
 			this._cashButton.addEventListener('click', () => {
 				eventEmiter.emit('order.payment:change', {
 					field: 'payment',
-					value: Payment.cash,
+					value: PaymentType.cash,
 				});
 			});
 		}
@@ -43,7 +43,7 @@ export class OrderView extends Form<Order> {
 			this._cardButton.addEventListener('click', () => {
 				eventEmiter.emit('order.payment:change', {
 					field: 'payment',
-					value: Payment.card,
+					value: PaymentType.card,
 				});
 			});
 		}
@@ -64,7 +64,7 @@ export class OrderView extends Form<Order> {
 		this._emailInput.value = val;
 	}
 
-	set activePaymentBtn(payment: Payment) {
+	set activePaymentBtn(payment: PaymentType) {
 		this.clearPaymentStyle();
 
 		if (!payment) return;

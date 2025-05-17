@@ -12,7 +12,7 @@ import {
 	Card,
 	cardButtonTexts,
 	ValidationResult,
-	Payment,
+	PaymentType,
 	ProductItem,
 } from './types';
 
@@ -48,7 +48,7 @@ const successView = new SuccessView(cloneTemplate(successTemplate), {
 	},
 });
 
-//отладочные сообщения
+//отладка
 // eventEmitter.onAll(({ eventName, data }) => {
 // 	console.log(eventName, data);
 // });
@@ -96,7 +96,7 @@ eventEmitter.on<ProductItem>('card:click', (item) =>
 
 eventEmitter.on('modal:open', () => (pageView.lock = true));
 
-eventEmitter.on('modal:close', () => pageView.lock = false);
+eventEmitter.on('modal:close', () => (pageView.lock = false));
 
 eventEmitter.on<ProductItem[]>('basket:changed', (items) => {
 	pageView.counter = mainModel.items.length;
@@ -106,7 +106,7 @@ eventEmitter.on<ProductItem[]>('basket:changed', (items) => {
 		});
 		return card.render({ ...item, basketItemIndex: index++ });
 	});
-	basketView.basketPrice = mainModel.getTotal();
+	basketView.basketPrice = mainModel.total;
 });
 
 eventEmitter.on('basket:click', () => {
@@ -117,12 +117,12 @@ eventEmitter.on('basket:click', () => {
 
 eventEmitter.on('order_form:open', () => {
 	orderPaymentView.clearAllInputs();
-	orderPaymentView.activePaymentBtn = mainModel.getOrderField(
+	orderPaymentView.activePaymentBtn = mainModel.getOrderFieldValue(
 		'payment'
-	) as Payment;
+	) as PaymentType;
 	modal.render({
 		content: orderPaymentView.render({
-			address: mainModel.getOrderField('address'),
+			address: mainModel.getOrderFieldValue('address'),
 			errors: '',
 			valid: mainModel.validateOrder().isPaymentFormValid,
 		}),
@@ -135,9 +135,9 @@ eventEmitter.on(
 		field: 'address' | 'phone' | 'email' | 'payment';
 		value: string;
 	}) => {
-		mainModel.setOrderField(data.field, data.value);
+		mainModel.setOrderFieldValue(data.field, data.value);
 		if (data.field === 'payment') {
-			orderPaymentView.activePaymentBtn = data.value as Payment;
+			orderPaymentView.activePaymentBtn = data.value as PaymentType;
 		}
 	}
 );
@@ -163,8 +163,8 @@ eventEmitter.on<ValidationResult>(
 eventEmitter.on('order:submit', () => {
 	modal.render({
 		content: orderContatsView.render({
-			email: mainModel.getOrderField('email'),
-			phone: mainModel.getOrderField('phone'),
+			email: mainModel.getOrderFieldValue('email'),
+			phone: mainModel.getOrderFieldValue('phone'),
 			errors: '',
 			valid: mainModel.validateOrder().isContactsFormValid,
 		}),
