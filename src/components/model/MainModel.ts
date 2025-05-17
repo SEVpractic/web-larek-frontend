@@ -1,140 +1,152 @@
-import { IEvents, Main, ProductItem, Order, ValidationResult } from "../../types";
-import { Model } from "../base/Model";
+import {
+	IEvents,
+	Main,
+	ProductItem,
+	Order,
+	ValidationResult,
+} from '../../types';
+import { Model } from '../base/Model';
 
 export class MainModel extends Model<Main> {
-  private _catalogItems: Map<string, ProductItem>;
-  private _preview: string | null;
-  private _order: Order;
+	private _catalogItems: Map<string, ProductItem>;
+	private _preview: string | null;
+	private _order: Order;
 
-  constructor(data: Partial<Main>, protected events: IEvents) {
-    super(data, events);
-    
-    this._catalogItems = new Map();
-    this._preview = null;
-    this._order = {
-      payment: '',
-      email: '',
-      phone: '',
-      address: '',
-      total: 0,
-      items: []
-    };
-  }
+	constructor(data: Partial<Main>, protected events: IEvents) {
+		super(data, events);
 
-  set catalogItems(items: ProductItem[]) {
-    this._catalogItems = new Map(items.map(el => [el.id, el]));
+		this._catalogItems = new Map();
+		this._preview = null;
+		this._order = {
+			payment: '',
+			email: '',
+			phone: '',
+			address: '',
+			total: 0,
+			items: [],
+		};
+	}
 
-    this.emitChanges('catalog:changed', this.getAllCards());
-  }
+	set catalogItems(items: ProductItem[]) {
+		this._catalogItems = new Map(items.map((el) => [el.id, el]));
 
-  getCard(id: string): ProductItem {
-    return this._catalogItems.get(id);
-  }
+		this.emitChanges('catalog:changed', this.getAllCards());
+	}
 
-  getCards(ids: string[]): ProductItem[] {
-    return ids.map(id => this._catalogItems.get(id))
-    .filter((item): item is ProductItem => item !== undefined);
-  }
+	getCard(id: string): ProductItem {
+		return this._catalogItems.get(id);
+	}
 
-  getAllCards(): ProductItem[] {
-    return Array.from(this._catalogItems.values());
-  }
-  
-  hasCardById(id: string): boolean {
-    return this._catalogItems.has(id);
-  }
+	getCards(ids: string[]): ProductItem[] {
+		return ids
+			.map((id) => this._catalogItems.get(id))
+			.filter((item): item is ProductItem => item !== undefined);
+	}
 
-  set preview(id: string | null) {
-    if (!this.hasCardById(id)) return;
-    this._preview = id;
+	getAllCards(): ProductItem[] {
+		return Array.from(this._catalogItems.values());
+	}
 
-    this.emitChanges('preview:changed', this.getCard(this._preview));
-  }
+	hasCardById(id: string): boolean {
+		return this._catalogItems.has(id);
+	}
 
-  getCartActionStatus(id: string): 'add' | 'remove' | 'disabled' {
-    const item = this.getCard(id);
-    if (!item || !item.price) return 'disabled';
+	set preview(id: string | null) {
+		if (!this.hasCardById(id)) return;
+		this._preview = id;
 
-    if (this._order.items.includes(id)) {
-      return 'remove';
-    } 
-    return 'add'
-  }
+		this.emitChanges('preview:changed', this.getCard(this._preview));
+	}
 
-  toggleProductInOrder(id: string): void {
-    if (!this.getCard(id)?.price) return;
+	getCartActionStatus(id: string): 'add' | 'remove' | 'disabled' {
+		const item = this.getCard(id);
+		if (!item || !item.price) return 'disabled';
 
-    if (!this._order.items.includes(id)) {
-      this._order.items.push(id);
-    } else {
-      this._order.items = this._order.items.filter(el => el !== id);
-    }
+		if (this._order.items.includes(id)) {
+			return 'remove';
+		}
+		return 'add';
+	}
 
-    this.setTotal();
-    this.emitChanges('basket:changed', this.getCards(this._order.items));
-  }
+	toggleProductInOrder(id: string): void {
+		if (!this.getCard(id)?.price) return;
 
-  clearOrder(): void {
-    console.log('перед удалением', this.order);
-    this._order.address = "";
-    this._order.email = "";
-    this._order.payment = "";
-    this._order.phone = "";
-    this._order.items = [];
-    this.setTotal();
-    this.emitChanges('basket:changed', this.getCards(this._order.items));
-  }
+		if (!this._order.items.includes(id)) {
+			this._order.items.push(id);
+		} else {
+			this._order.items = this._order.items.filter((el) => el !== id);
+		}
 
-  setTotal(): void {
-    this._order.total = this.getCards(this._order.items)
-      .reduce((total, item) => total + item.price, 0);
-  }
+		this.setTotal();
+		this.emitChanges('basket:changed', this.getCards(this._order.items));
+	}
 
-  getTotal(): number {
-    return this._order.total;
-  }
+	clearOrder(): void {
+		console.log('перед удалением', this.order);
+		this._order.address = '';
+		this._order.email = '';
+		this._order.payment = '';
+		this._order.phone = '';
+		this._order.items = [];
+		this.setTotal();
+		this.emitChanges('basket:changed', this.getCards(this._order.items));
+	}
 
-  get items(): string[] {
-    return this._order.items;
-  }
+	setTotal(): void {
+		this._order.total = this.getCards(this._order.items).reduce(
+			(total, item) => total + item.price,
+			0
+		);
+	}
 
-  setOrderField(field: 'address' | 'phone' | 'email' | 'payment', value: string) {
-    if (!this._order) return;
-    this._order[field] = value;
-    this.validateOrder();
-  }
+	getTotal(): number {
+		return this._order.total;
+	}
 
-  getOrderField(field: 'address' | 'phone' | 'email' | 'payment'):  string {
-    return this._order?.[field] ?? '';
-  }
+	get items(): string[] {
+		return this._order.items;
+	}
 
-  get order(): Order {
-    return this._order;
-  }
+	setOrderField(
+		field: 'address' | 'phone' | 'email' | 'payment',
+		value: string
+	) {
+		if (!this._order) return;
+		this._order[field] = value;
+		this.validateOrder();
+	}
 
-  validateOrder(): ValidationResult {
-    const result: ValidationResult = {};
-    result.isPaymentFormValid = true;
-    result.isContactsFormValid = true;
+	getOrderField(field: 'address' | 'phone' | 'email' | 'payment'): string {
+		return this._order?.[field] ?? '';
+	}
 
-    if (!this._order.payment) {
-      result.payment = "Не выбран способ оплаты";
-      result.isPaymentFormValid = false;
-    }
-    if (!this._order.address) {
-      result.address = "Не введен адрес доставки";
-      result.isPaymentFormValid = false;
-    }
-    if (!this._order.email) {
-      result.email = "Не указан email";
-      result.isContactsFormValid = false;
-    }    
-    if (!this._order.phone) {
-      result.phone = "Не указан номер телефона";
-      result.isContactsFormValid = false;
-    }
+	get order(): Order {
+		return this._order;
+	}
 
-    this.emitChanges('form_input_errors:changed', result);
-    return result;
-  }
+	validateOrder(): ValidationResult {
+		const result: ValidationResult = {};
+		result.isPaymentFormValid = true;
+		result.isContactsFormValid = true;
+
+		if (!this._order.payment) {
+			result.payment = 'Не выбран способ оплаты';
+			result.isPaymentFormValid = false;
+		}
+		if (!this._order.address) {
+			result.address = 'Не введен адрес доставки';
+			result.isPaymentFormValid = false;
+		}
+		if (!this._order.email) {
+			result.email = 'Не указан email';
+			result.isContactsFormValid = false;
+		}
+		if (!this._order.phone) {
+			result.phone = 'Не указан номер телефона';
+			result.isContactsFormValid = false;
+		}
+
+		this.emitChanges('form_input_errors:changed', result);
+		return result;
+	}
 }

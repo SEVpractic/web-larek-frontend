@@ -1,5 +1,3 @@
-import { OrderView } from "../components/view/OrderView";
-
 export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
 export type ApiListResponse<Type> = {
@@ -26,7 +24,8 @@ export type Order = {
 };
 
 export enum Payment {
-	card = 'card', cash = 'cash'
+	card = 'card',
+	cash = 'cash',
 }
 
 export type OrderRespose = {
@@ -38,7 +37,7 @@ export type Main = {
 	catalogItems: Map<string, ProductItem>;
 	order: string | null;
 	preview: Order;
-}
+};
 
 export interface IApi {
 	readonly baseUrl: string;
@@ -48,7 +47,7 @@ export interface IApi {
 }
 
 export interface IProductApi {
-  getProductItem(id: string): Promise<ProductItem>;
+	getProductItem(id: string): Promise<ProductItem>;
 	getProductList(): Promise<ProductItem[]>;
 	postOrder(orderBody: Order): Promise<OrderRespose>;
 }
@@ -70,68 +69,32 @@ export interface IEvents {
 }
 
 export type Action = {
-  onClick: (e: MouseEvent) => void;
+	onClick: (e: MouseEvent) => void;
 };
 
-export type Page = {
-	headerBasket: HTMLElement;
-	basketCounter: HTMLElement;
-	gallery: HTMLElement;
-	pageWrapper: HTMLElement;
-}
+export type Card = ProductItem & {
+	buttonText: string;
+	basketItemIndex: number;
+	isButtonDisabled: boolean;
+};
 
-export type Card = ProductItem & { 
-	buttonText: string, 
-	basketItemIndex: number, 
-	isButtonDisabled: boolean 
-}
+export type ValidationResult = Partial<
+	Record<keyof Order, string> & {
+		isContactsFormValid: boolean;
+		isPaymentFormValid: boolean;
+	}
+>;
 
-export type Modal = {
-	modalСlose: HTMLButtonElement;
-	modalContent: HTMLElement; 
-}
-
-export type Basket = {
-	basketList: HTMLElement;
-	basketPrice: HTMLElement;
-	basketButton: HTMLButtonElement; 
-}
-
-export type Form = {
-	submit: HTMLButtonElement;
-	formErrors: HTMLElement;
-}
-
-export type PaymentForm = {
-	payment: string;
-  address: string;
-	cardBtn: HTMLButtonElement;
-	cashBtn: HTMLButtonElement;
-}
-
-export type ContactsFormView = {
-	email: string;
-	phone: string;
-}
-
-export type SuccessView = {
-	orderSuccessDescription: HTMLButtonElement;
-	orderSuccessClose: HTMLButtonElement;
-}
-
-export type ValidationResult = Partial<Record<keyof Order, string> 
-	& { isContactsFormValid: boolean, isPaymentFormValid: boolean }>;
-
-export const categories = new Map<string, string> ([
-  ['софт-скил', 'card__category_soft'],
-  ['хард-скил', 'card__category_hard'],
-  ['другое', 'card__category_other'],
-  ['дополнительное', 'card__category_additional'],
-  ['кнопка', 'card__category_button'],
+export const categories = new Map<string, string>([
+	['софт-скил', 'card__category_soft'],
+	['хард-скил', 'card__category_hard'],
+	['другое', 'card__category_other'],
+	['дополнительное', 'card__category_additional'],
+	['кнопка', 'card__category_button'],
 ]);
 
-export const cardButtonTexts = new Map<string, string> ([
+export const cardButtonTexts = new Map<string, string>([
 	['add', 'Купить'],
 	['remove', 'Убрать'],
-  ['disabled', 'Не продается!']
+	['disabled', 'Не продается!'],
 ]);

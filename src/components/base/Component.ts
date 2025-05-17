@@ -1,5 +1,3 @@
-import {IEvents} from "../../types/index";
-
 /**
  * Базовый компонент
  */
