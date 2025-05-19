@@ -43,7 +43,7 @@ export class CardView extends Component<Card> {
 	set category(val: string) {
 		if (!this._cardCategory) return;
 		this.setText(this._cardCategory, val);
-		this.toggleClass(this._cardCategory, categories.get(val));
+		this._cardCategory.className = `card__category card__category_${categories.get(val)}`;
 	}
 
 	set title(val: string) {

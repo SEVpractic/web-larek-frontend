@@ -86,11 +86,11 @@ export type ValidationResult = Partial<
 >;
 
 export const categories = new Map<string, string>([
-	['софт-скил', 'card__category_soft'],
-	['хард-скил', 'card__category_hard'],
-	['другое', 'card__category_other'],
-	['дополнительное', 'card__category_additional'],
-	['кнопка', 'card__category_button'],
+	['софт-скил', 'soft'],
+	['хард-скил', 'hard'],
+	['другое', 'other'],
+	['дополнительное', 'additional'],
+	['кнопка', 'button'],
 ]);
 
 export const cardButtonTexts = new Map<string, string>([
