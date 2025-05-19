@@ -104,7 +104,7 @@ eventEmitter.on<ProductItem[]>('basket:changed', (items) => {
 		const card = new CardView(cloneTemplate(cardBasketTemplate), {
 			onClick: () => eventEmitter.emit('card:click', item),
 		});
-		return card.render({ ...item, basketItemIndex: index++ });
+		return card.render({ ...item, basketItemIndex: ++index });
 	});
 	basketView.basketPrice = mainModel.total;
 });

@@ -20,6 +20,7 @@ export class CardView extends Component<Card> {
 		this._cardText = container.querySelector('.card__text');
 		this._cardCategory = container.querySelector('.card__category');
 		this._cardButton = container.querySelector('.card__button');
+		this._basketItemIndex = container.querySelector('.basket__item-index');
 
 		if (actions?.onClick) {
 			if (this._cardButton) {
@@ -55,7 +56,7 @@ export class CardView extends Component<Card> {
 	}
 
 	set basketItemIndex(val: number) {
-		this.setText(this._basketItemIndex, String(val));
+		this.setText(this._basketItemIndex, val);
 	}
 
 	set buttonText(val: string) {
